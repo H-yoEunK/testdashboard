@@ -1,0 +1,96 @@
+--- 
+title: "무적 1조 아자아자 화이팅"
+author: "최강 1조"
+format: dashboard
+--- 
+
+```{python}
+import plotly.express as px
+import pandas as pd
+import numpy as np
+
+df =pd.read_csv('houseprice-with-lonlat.csv')
+```
+
+## Row {height=60%}
+
+```{python}
+#| title: Roof Styles over Years
+
+df['Year_Built'].min()
+df['Year_Built'].max()
+bins=np.array([1870,1879,1889,1899,1909,1919,1929,1939,
+               1949,1959,1969,1979,1989,1999,2009,2019])
+df['Years']=pd.cut(df['Year_Built'], bins,
+                       labels=(np.arange(187,202)*10).astype(int))
+
+years_roof = df.groupby(['Years','Roof_Style'])\
+               .agg(count_roof=('Roof_Style', 'count'))\
+               .reset_index()
+
+fig = px.bar(
+    years_roof,
+    x='Roof_Style',
+    y='count_roof',
+    animation_frame='Years',
+    title='Roof Styles over Years',
+    color="Roof_Style",
+    labels={'Roof_Style': 'Roof Style', 'count_roof': 'Count'}
+)
+
+fig.show()
+
+# fig = px.bar(
+#     years_roof,
+#     x='Years',
+#     y='count_roof',
+#     color='Roof_Style',
+#     title='Roof Styles over Years (Cumulative)',
+#     labels={'Roof_Style': 'Roof Style', 'count_roof': 'Count'},
+#     barmode='stack')
+# 
+# fig.show()
+```
+```{python}
+#| title: Exterior over Years
+years_ext = df.groupby(['Years','Exterior_1st'])\
+               .agg(count_ext=('Exterior_1st', 'count'))\
+               .reset_index()
+
+fig = px.bar(
+    years_ext,
+    x='Exterior_1st',
+    y='count_ext',
+    animation_frame='Years',
+    title='Exterior over Years',
+    color="Exterior_1st",
+    labels={'Exterior_1st': 'Exterior', 'count_ext': 'Count'}
+)
+
+fig.show()
+```
+
+
+```{python}
+#| title: Foundation over Years
+
+years_fnd = df.groupby(['Years','Foundation'])\
+               .agg(count_fnd=('Foundation', 'count'))\
+               .reset_index()
+
+fig = px.bar(
+    years_fnd,
+    x='Foundation',
+    y='count_fnd',
+    animation_frame='Years',
+    title='Foundation over Years',
+    color="Foundation",
+    labels={'Foundation': 'Foundation', 'count_fnd': 'Count'}
+)
+
+fig.show()
+
+```
+
+## Row {height=40%}
+

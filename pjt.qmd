@@ -1,0 +1,34 @@
+--- 
+title: "1조 PJT"
+author: "권효은"
+format: dashboard
+--- 
+
+```{python}
+import plotly.express as px
+import pandas as pd
+
+df = pd.read_csv("houseprice-with-lonlat.csv")
+
+df = df[["Year_Built", "Foundation"]]
+# df["Year_Built"].min() # 1872
+# df["Year_Built"].max() # 2010
+
+df.sort_values(by = "Year_Built").reset_index(drop = True)
+
+fd = ["BrkTil", "CBlock", "PConc", "Slab", "Stone", "Wood"]
+
+bins = [1872, 1895, 1918, 1941, 1964, 1987, 2010]  # 연도를 6등분으로 나눈 구간
+labels = ['1872-1895', '1895-1918', '1918-1941', '1941-1964', '1964-1987', '1987-2010']  # 구간 레이블
+
+df['Year_Built'] = pd.cut(df['Year_Built'], bins = bins, labels = labels, right = False)
+df = df.groupby(['Year_Built', 'Foundation']).size().reset_index(name='Count')
+```
+
+## Row {height=60%}
+
+```{python}
+fig = px.bar(df, x='Foundation', y='Count', color='Foundation', animation_frame='Year_Built', barmode='group')
+
+fig.show()
+```

@@ -1,0 +1,144 @@
+--- 
+title: "무적 1조 아자아자 화이팅"
+author: "최강 1조"
+format: dashboard
+--- 
+
+```{python}
+import plotly.express as px
+import plotly.graph_objects as go
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('houseprice-with-lonlat.csv')
+```
+
+## Row {height=60%}
+
+```{python}
+# df['Year_Built'].min()
+# df['Year_Built'].max()
+bins=np.array([1870,1879,1889,1899,1909,1919,1929,1939,
+               1949,1959,1969,1979,1989,1999,2009,2019])
+df['Years'] = pd.cut(df['Year_Built'], bins,
+                       labels=(np.arange(187,202)*10).astype(int))
+                       
+years_roof = df.groupby(['Years','Roof_Style'])\
+               .agg(count_roof=('Roof_Style', 'count'))\
+               .reset_index()
+
+frames = []
+dates = np.arange(187,202)*10
+
+fig = go.Figure()
+for date in dates:
+    fig.add_trace(go.Bar(
+        x=[date],
+        y=[years_roof.loc[years_roof['Years'] == date, 'count_roof'].sum()],
+        name=str(date),
+        text=years_roof.loc[years_roof['Years'] == date, 'count_roof'],
+        textposition='inside',
+        marker=dict(color='rgba(0, 102, 204, 0.6)')
+    ))
+    
+    for style, count in zip(
+        years_roof.loc[years_roof['Years'] == date, 'Roof_Style'],
+        years_roof.loc[years_roof['Years'] == date, 'count_roof']
+    ):
+        fig.add_trace(go.Bar(
+            x=[date],
+            y=[count],
+            name=style,
+            text=[count],
+            textposition='inside'
+        ))
+
+fig.update_layout(
+    title='Roof Style Count (stacked)',
+    xaxis_title='Year',
+    yaxis_title='Count',
+    barmode='stack'
+)
+
+# ------------------------------------------------------------------------------
+
+roof_1910 = years_roof[years_roof['Years'] == 1910]
+
+fig = go.Figure()
+
+fig.add_trace(go.Bar(
+    x=['1910'],  # 단일 x 값
+    y=[roof_1910['count_roof'].sum()],  # 전체 누적 값
+    name='Total Roof Count',
+    text=roof_1910['count_roof'],
+    textposition='inside',
+    marker=dict(color='rgba(0, 102, 204, 0.6)')
+))
+
+
+for style, count in zip(roof_1910['Roof_Style'], roof_1910['count_roof']):
+    fig.add_trace(go.Bar(
+        x=['1910'],
+        y=[count],
+        name=style,
+        text=[count],
+        textposition='inside'
+    ))
+
+fig.update_layout(
+    title='Roof Style Count (stacked)',
+    xaxis_title='Year',
+    yaxis_title='Count',
+    barmode='stack'
+)
+```
+
+```{python}
+
+fig.show()
+
+```
+
+
+```{python}
+#| title: Exterior over Years
+years_ext = df.groupby(['Years','Exterior_1st'])\
+               .agg(count_ext=('Exterior_1st', 'count'))\
+               .reset_index()
+
+fig = px.bar(
+    years_ext,
+    x='Exterior_1st',
+    y='count_ext',
+    animation_frame='Years',
+    title='Exterior over Years',
+    color="Exterior_1st",
+    labels={'Exterior_1st': 'Exterior', 'count_ext': 'Count'}
+)
+
+fig.show()
+```
+
+
+```{python}
+#| title: Foundation over Years
+
+years_fnd = df.groupby(['Years','Foundation'])\
+               .agg(count_fnd=('Foundation', 'count'))\
+               .reset_index()
+
+fig = px.bar(
+    years_fnd,
+    x='Years',
+    y='count_fnd',
+    color='Foundation',
+    title='Foundation Counts Over Years (Cumulative)',
+    labels={'count_fnd': 'Count', 'Years': 'Year'},
+    barmode='stack')
+
+fig.show()
+
+```
+
+## Row {height=40%}
+
